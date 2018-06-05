@@ -6,13 +6,14 @@
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
-	<!-- 配置JedisPoolConfig -->
+	<!-- 配置JedisPoolConfig：连接池配置 -->
 	<bean id="poolConfig" class="redis.clients.jedis.JedisPoolConfig">
 		<property name="maxIdle" value="50" />   <!-- 最大空闲数 -->
 		<property name="maxTotal" value="100"/>   <!-- 最大连接数 -->
 		<property name="maxWaitMillis" value="20000"/>   <!-- 最大等待时间 -->
 	</bean>
 
+	<!-- 连接工厂设置：个人认为就是连接池的样子 -->
 	<bean id="connectionFactory" 
 			class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
 		<property name="hostName" value="192.168.223.130"/>
@@ -20,16 +21,22 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
 		<property name="poolConfig" ref="poolConfig" />
 	</bean>
 	
+	<!-- jdk 序列化 -->
 	<bean id="jdkSerializationRedisSerializer" 
 			class="org.springframework.data.redis.serializer.JdkSerializationRedisSerializer" />
 	
+	<!-- string 序列化 -->
 	<bean id="StringRedisSerialization" 
 			class="org.springframework.data.redis.serializer.StringRedisSerializer"/>
 			
-	<bean id="redisTemplate" class="org.springframework.data.redis.core.RedisTempalte">
+	<!-- redisTemplate:模本类  -->
+	<bean id="redisTemplate" class="org.springframework.data.redis.core.RedisTemplate">
 		<property name="connectionFactory" ref="connectionFactory" />
+		<!-- defaultSerializer ：在Spring对hash结构的操作中会涉及map等操作，所以这里要明确它的规则 -->
+		<!-- 也可以直接设置 ：hashKeySerializer 和   hashValueSerializer -->
+		<property name="defaultSerializer" ref="StringRedisSerialization"/>
 		<property name="keySerializer" ref="StringRedisSerialization"/>     <!-- 键序列化 -->
-		<property name="valueSerializer" ref="jdkSerializationRedisSerializer"/>    <!-- 值序列化 -->
+		<property name="valueSerializer" ref="StringRedisSerialization"/>    <!-- 值序列化 -->
 	</bean>			
 	
 	
