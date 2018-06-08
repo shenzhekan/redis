@@ -18,6 +18,7 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
 			class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
 		<property name="hostName" value="192.168.223.130"/>
 		<property name="port" value="6379"/>
+		<property name="password" value="root"/>
 		<property name="poolConfig" ref="poolConfig" />
 	</bean>
 	

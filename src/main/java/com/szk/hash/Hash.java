@@ -11,6 +11,11 @@ import org.springframework.data.redis.core.RedisTemplate;
 
 public class Hash {
 	
+	/**
+	 * hash 结构：这里多个键值对存入和取出都需要Map
+	 * 			多个value取出返回List
+	 * 			多个key取出返回Set
+	 */
 	public static void HashTest1() {
 		ApplicationContext applicationContext = new ClassPathXmlApplicationContext("applicationContext.xml");
 		RedisTemplate redisTemplate = applicationContext.getBean(RedisTemplate.class);
