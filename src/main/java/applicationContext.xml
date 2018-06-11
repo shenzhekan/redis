@@ -40,6 +40,37 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
 		<property name="valueSerializer" ref="StringRedisSerialization"/>    <!-- 值序列化 -->
 	</bean>			
 	
+	<!-- Redis 消息订阅：发布订阅监听类 -->
+	<bean id="redisMessageListener" class="com.szk.listener.RedisMessageListener" >
+		<property name="redisTemplate" ref="redisTemplate" />
+	</bean>
 	
-			
+	<!-- Redis 监听容器：用于监听Redis的发布订阅消息 -->
+	<bean id="topicContainer" class="org.springframework.data.redis.listener.RedisMessageListenerContainer">
+	
+		<!-- Redis 连接工厂 -->
+		<property name="connectionFactory" ref="connectionFactory"/>
+		
+		<!-- 连接池，这里只要线程池生存，才能继续监听 -->
+		<property name="taskExecutor">
+			<bean class="org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler">
+				<property name="poolSize" value="3"/>
+			</bean>
+		</property>
+		
+		<!-- 消息监听Map -->
+		<property name="messageListeners">
+			<map>
+				<!-- 配置监听者，key-ref 和 bean id 定义一致 -->
+				<entry key-ref="redisMessageListener" >
+					<!-- 监听类 -->
+					<bean class="org.springframework.data.redis.listener.ChannelTopic">
+						<constructor-arg value="chat" />
+					</bean>
+				</entry>
+			</map>
+		</property>
+	</bean>
+	
+	
 </beans>
