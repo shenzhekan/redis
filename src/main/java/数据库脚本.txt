@@ -1,0 +1,7 @@
+create table role(
+	id   int(10) primary key auto_increment,
+	roleName   varchar(20),
+	note       varchar(100)
+);
+
+insert into role (roleName, note) values ('–°≥Û','œ≤æÁ»À‘±');
