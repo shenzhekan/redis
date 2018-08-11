@@ -2,6 +2,9 @@ package com.szk.pojo;
 
 import java.io.Serializable;
 
+import org.springframework.stereotype.Component;
+
+@Component("Role")
 public class Role implements Serializable{
 
 	/**

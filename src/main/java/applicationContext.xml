@@ -1,10 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:context="http://www.springframework.org/schema/context"
-       xsi:schemaLocation="
-http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:cache="http://www.springframework.org/schema/cache"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context.xsd
+	http://www.springframework.org/schema/aop
+	http://www.springframework.org/schema/aop/spring-aop.xsd
+	http://www.springframework.org/schema/tx 
+	http://www.springframework.org/schema/tx/spring-tx.xsd
+	http://www.springframework.org/schema/cache
+	http://www.springframework.org/schema/cache/spring-cache.xsd">
+
+<!-- 
+	redis数据库配置 
+-->
 
 	<!-- 配置JedisPoolConfig：连接池配置 -->
 	<bean id="poolConfig" class="redis.clients.jedis.JedisPoolConfig">
@@ -38,7 +52,29 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
 		<property name="defaultSerializer" ref="StringRedisSerialization"/>
 		<property name="keySerializer" ref="StringRedisSerialization"/>     <!-- 键序列化 -->
 		<property name="valueSerializer" ref="StringRedisSerialization"/>    <!-- 值序列化 -->
-	</bean>			
+	</bean>
+	
+	<!-- 缓存管理器 -->
+	<!-- 
+		使用注解驱动，其中属性cache-manager默认值为cacheManager,
+		所以如果你的缓存管理器名车也是cacheManager，则无需重新定义
+		我这里为了使用到这个，所以定义的是 redisCacheManager
+	 -->
+	<cache:annotation-driven cache-manager="redisCacheManager"/>
+	<bean id="redisCacheManager" class="org.springframework.data.redis.cache.RedisCacheManager">
+		<!-- 通过构造的方式注入 redisTemplate --> 
+		<constructor-arg index="0" ref="redisTemplate"/>
+		<!-- 设置默认的超时时间，单位为秒 -->
+		<property name="defaultExpiration" value="600"/>
+		<!-- 定义缓存管理器的名称 -->
+		<property name="cacheNames">
+			<list>
+				<value>redisCacheManager</value>
+			</list>
+		</property>
+	</bean>
+	
+	
 	
 	<!-- Redis 消息订阅：发布订阅监听类 -->
 	<bean id="redisMessageListener" class="com.szk.listener.RedisMessageListener" >
@@ -70,6 +106,49 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
 				</entry>
 			</map>
 		</property>
+	</bean>
+	
+<!-- 
+	整合mybatis的设置
+ -->
+	
+	<!-- 扫描对应的包 -->
+	<context:annotation-config />
+	<context:component-scan base-package="com.szk.pojo.Role" />
+	<context:property-placeholder location="classpath:jdbc.proprties"/>
+	
+	<!-- dbcp数据库连接池 -->
+	<bean id="dbcpDataSource" class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="driverClassName" value="${jdbc.driver}" />
+		<property name="url" value="${jdbc.url}"/>
+		<property name="username" value="${jdbc.username}"/>
+		<property name="password" value="${jdbc.password}"/>
+	</bean>
+	
+	<!-- jdbcTemplate -->
+	<bean id="jdbcTempalte" class="org.springframework.jdbc.core.JdbcTemplate">
+		<property name="dataSource" ref="dbcpDataSource" />
+	</bean>
+	
+	<!-- sqlSessionFactory -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dbcpDataSource"/>
+		<property name="configLocation" value="classpath:mybatis.xml"/>
+	</bean>
+	
+	<!-- 事务管理的配置 -->
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dbcpDataSource"/>
+	</bean>
+	
+	<!-- 使用注解定义的事务管理 -->
+	<tx:annotation-driven transaction-manager="transactionManager"/>
+	
+	<!-- 采用自动扫描的方式创建Mapper bean -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="coms.szk.mapper"/>
+		<property name="sqlSessionFactory" ref="sqlSessionFactory"/>
+		<property name="annotationClass" value="org.springframework.stereotype.Repository"/>
 	</bean>
 	
 	
