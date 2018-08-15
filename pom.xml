@@ -17,6 +17,8 @@
 	<log4j.version>1.2.16</log4j.version>
 	<!-- slg4j 版本号 -->
 	<slf4j.version>1.7.7</slf4j.version>
+    <!-- Junit 版本号 -->
+    <junit.version>4.12</junit.version>
   
   </properties>
 
@@ -27,7 +29,7 @@
   	<dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.11</version>
+      <version>${junit.version}</version>
     </dependency>   
     
     <!-- spring 核心包 -->
@@ -121,9 +123,9 @@
     </dependency>
     
     <!-- mysql 数据库连接包 -->
-    <dependency>  
-        <groupId>mysql</groupId>  
-        <artifactId>mysql-connector-java</artifactId>  
+    <dependency>
+        <artifactId>mysql-connector-java</artifactId>
+        <groupId>mysql</groupId>
         <version>5.1.30</version>  
     </dependency>
     
@@ -272,8 +274,19 @@
 	            </configuration>  
 	        </plugin>  
     	</plugins>  
-         <!--  强制将xml文件打到war包中 s-->
+
         <resources>
+
+            <!--  强制将resources文件中的 xml文件打到war包中 -->
+            <resource>
+                <directory>src/resources</directory>
+                <includes>
+                    <include>**/*.xml</include>
+                </includes>
+                <filtering>false</filtering>
+            </resource>
+
+            <!-- 强制将Java文件中的 mapper.xml 文件打到war包中 -->
             <resource>
                 <directory>src/main/java</directory>
                 <includes>
@@ -281,8 +294,21 @@
                 </includes>
                 <filtering>false</filtering>
             </resource>
+
+            <!-- 强制将resources文件中的 属性文件达到war包中 -->
+            <resource>
+                <directory>src/resources</directory>
+                <includes>
+                    <include>**/*.properties</include>
+                </includes>
+            </resource>
+
         </resources>
-        
-	</build>
+
+
+
+
+
+    </build>
 
 </project>

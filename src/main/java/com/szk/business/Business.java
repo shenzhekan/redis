@@ -23,7 +23,7 @@ public class Business {
 		RedisTemplate redisTemplate = applicationContext.getBean(RedisTemplate.class);
 		
 		SessionCallback callback = (SessionCallback) (RedisOperations ops) -> {
-			ops.multi();           // 开启事务
+			ops.multi();                                                 // 开启事务
 			ops.boundValueOps("key1").set("value1");
 			
 			// 由于这里只是将命令放入队列，所以value值为null

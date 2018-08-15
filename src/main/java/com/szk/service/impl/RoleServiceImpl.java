@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +21,7 @@ import com.szk.service.RoleService;
  * @author SZK
  *
  */
+@Component("roleServiceImpl")
 public class RoleServiceImpl implements RoleService {
 
 	@Autowired
@@ -30,15 +32,20 @@ public class RoleServiceImpl implements RoleService {
 	 * 这里使用的是：Cacheable
 	 * 会先到缓存中查询key:key_role_#id
 	 * 通过value引用缓存管理器，通过key定义键
-	 * 若缓存中存在就返回缓存数据，否则访问方法得到数据
+	 * 若缓存中存在就返回缓存数据，否则访问方法得到数据,然后将数据存入缓存中
 	 */
 	@Override
 	@Transactional(isolation=Isolation.READ_COMMITTED,  // 隔离级别
 				   propagation=Propagation.REQUIRED)    // 传播行为
 	@Cacheable(value = "redisCacheManager", key = "'redis_role_'+#id")
 	public Role getRole(Long id) {
-		return roleMapper.getRole(id);
+		Role role = new Role();
+		role = roleMapper.getRole(id);
+		System.out.println(role.toString());
+		return role;
 	}
+
+
 
 	/**
 	 * 方法：根据id删除一条数据
@@ -47,7 +54,9 @@ public class RoleServiceImpl implements RoleService {
 	public int deleteRole(Long id) {
 		return roleMapper.deleteRole(id);
 	}
-	
+
+
+
 	/**
 	 * 方法：插入一条数据
 	 * 这里使用的是：CachePut
@@ -75,6 +84,7 @@ public class RoleServiceImpl implements RoleService {
 	public int updateRole(Role role) {
 		return roleMapper.updateRole(role);
 	}
+
 
 	@Override
 	public List<Role> listRoles(String roleName, String note) {
